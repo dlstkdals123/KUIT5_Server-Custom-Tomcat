@@ -3,6 +3,7 @@ package webserver;
 import db.MemoryUserRepository;
 import http.util.HttpRequestUtils;
 import http.util.IOUtils;
+import http.util.URL;
 import model.User;
 
 import java.io.*;
@@ -28,91 +29,63 @@ public class RequestHandler implements Runnable{
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             DataOutputStream dos = new DataOutputStream(out);
 
-            String[] tokens = br.readLine().split(" ");
-            System.out.println(tokens[0] + " " + tokens[1] + " " + tokens[2]);
-            if (tokens[1].equals("/"))
-                tokens[1] = "/index.html";
+            HashMap<String, String> header = (HashMap<String, String>) HttpRequestUtils.parseHeader(br);
 
-            if (tokens[0].equals("GET") && tokens[1].endsWith(".html")) {
-                String filePath = "webapp" + tokens[1];
-                byte[] body = Files.readAllBytes(Paths.get(filePath));
+            if (header.get("method").equals("GET")) {
+                String filePath = HttpRequestUtils.getFilePath(header.get("url"));
 
-                response200Header(dos, body.length);
-                responseBody(dos, body);
-            }
+                System.out.println("Cookie :" + header.get("Cookie"));
 
-            else if (tokens[0].equals("GET") && tokens[1].equals("/user/userList")) {
-                HashMap<String, String> cookieList = new HashMap<>();
-                while(true) {
-                    final String line = br.readLine();
-                    if (line.isEmpty())
-                        break;
-                    if (line.startsWith("Cookie")) {
-                        String cookieString = line.split(": ")[1];
-                        cookieList = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(cookieString);
+                if (header.get("url").equals(URL.USER_LIST.getUrl())) {
+                    HashMap<String, String> cookieList = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(header.get("Cookie"));
+                    if (!cookieList.get("logined").equals("true")) {
+                        filePath = URL.INDEX.getFilePath();
                     }
                 }
 
-                if (cookieList.get("logined").equals("true")) {
-                    String filePath = "webapp/user/list.html";
-                    byte[] body = Files.readAllBytes(Paths.get(filePath));
+                byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-                    response200Header(dos, body.length);
-                    responseBody(dos, body);
-                }
+                response200Header(dos, body.length, header.get("Accept"));
+                responseBody(dos, body);
 
+                return;
             }
 
-            else if (tokens[0].equals("POST")) {
-                String endpoint = tokens[1];
-                String queryString;
-                int requestContentLength = 0;
+            if (header.get("method").equals("POST")) {
+                int requestContentLength = Integer.parseInt(header.get("Content-Length"));
 
-                while(true) {
-                    final String line = br.readLine();
-                    if (line.isEmpty())
-                        break;
-                    if (line.startsWith("Content-Length"))
-                        requestContentLength = Integer.parseInt(line.split(": ")[1]);
-                }
-
-                queryString = IOUtils.readData(br, requestContentLength);
+                String queryString = IOUtils.readData(br, requestContentLength);
                 HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(queryString);
                 MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
 
-                if (endpoint.equals("/user/signup")) {
+                if (header.get("url").equals(URL.SIGNUP.getUrl())) {
                     memoryUserRepository.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
-                    response302Header(dos, "/index.html", null);
+                    response302Header(dos, URL.SIGNUP.getRedirectPath(), null);
+                    return;
                 }
 
-                else if (endpoint.equals("/user/login")) {
+                if (header.get("url").equals(URL.LOGIN.getUrl())) {
                     User user = memoryUserRepository.findUserById(params.get("userId"));
-                    if (user == null) {
-                        response302Header(dos, "/logined_failed.html", null);
+                    if (user == null
+                        || !params.get("password").equals(user.getPassword())) {
+                        response302Header(dos, URL.LOGIN_FAILED.getRedirectPath(), null);
                         return;
                     }
-
-                    if (!params.get("password")
-                            .equals(user.getPassword())) {
-                        response302Header(dos, "/logined_failed.html", null);
-                        return;
-                    }
-
-                    String cookie = "logined=true";
-                    response302Header(dos, "/index.html", cookie);
+                    String cookie = "logined=true; Path=/";
+                    response302Header(dos, URL.LOGIN.getRedirectPath(), cookie);
                 }
             }
-
-
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
         }
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String contentType) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            if (contentType.isEmpty())
+                contentType = "text/html";
+            dos.writeBytes("Content-Type: " + contentType + ";charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
@@ -123,9 +96,9 @@ public class RequestHandler implements Runnable{
     private void response302Header(DataOutputStream dos, String path, String cookie) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
-            dos.writeBytes("Location: " + path + "\r\n");
             if (cookie != null)
-                dos.writeBytes("Cookie: " + cookie + "\r\n");
+                dos.writeBytes("Set-Cookie: " + cookie + "\r\n");
+            dos.writeBytes("Location: " + path + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.log(Level.SEVERE, e.getMessage());
