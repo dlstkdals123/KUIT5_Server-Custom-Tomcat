@@ -55,15 +55,29 @@ public class RequestHandler implements Runnable{
                 }
 
                 queryString = IOUtils.readData(br, requestContentLength);
+                HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(queryString);
+                MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
 
                 if (endpoint.equals("/user/signup")) {
-                    HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(queryString);
-                    MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
                     memoryUserRepository.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
+                    response302Header(dos, "/index.html", null);
+                }
 
+                else if (endpoint.equals("/user/login")) {
+                    User user = memoryUserRepository.findUserById(params.get("userId"));
+                    if (user == null) {
+                        response302Header(dos, "/logined_failed.html", null);
+                        return;
+                    }
 
-                    String filePath = "/index.html";
-                    response302Header(dos, filePath);
+                    if (!params.get("password")
+                            .equals(user.getPassword())) {
+                        response302Header(dos, "/logined_failed.html", null);
+                        return;
+                    }
+
+                    String cookie = "logined=true";
+                    response302Header(dos, "/index.html", cookie);
                 }
             }
 
@@ -84,10 +98,12 @@ public class RequestHandler implements Runnable{
         }
     }
 
-    private void response302Header(DataOutputStream dos, String path) {
+    private void response302Header(DataOutputStream dos, String path, String cookie) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: " + path + "\r\n");
+            if (cookie != null)
+                dos.writeBytes("Cookie: " + cookie + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.log(Level.SEVERE, e.getMessage());
