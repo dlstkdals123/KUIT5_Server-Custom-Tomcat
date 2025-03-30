@@ -3,7 +3,6 @@ package http.util;
 import java.io.BufferedReader;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
