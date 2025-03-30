@@ -2,6 +2,7 @@ package webserver;
 
 import db.MemoryUserRepository;
 import http.util.HttpRequestUtils;
+import http.util.IOUtils;
 import model.User;
 
 import java.io.*;
@@ -9,7 +10,6 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,10 +29,11 @@ public class RequestHandler implements Runnable{
             DataOutputStream dos = new DataOutputStream(out);
 
             String[] tokens = br.readLine().split(" ");
+            System.out.println(tokens[0] + " " + tokens[1] + " " + tokens[2]);
             if (tokens[1].equals("/"))
                 tokens[1] = "/index.html";
 
-            if (tokens[1].endsWith(".html")) {
+            if (tokens[0].equals("GET") && tokens[1].endsWith(".html")) {
                 String filePath = "webapp" + tokens[1];
                 byte[] body = Files.readAllBytes(Paths.get(filePath));
 
@@ -40,11 +41,20 @@ public class RequestHandler implements Runnable{
                 responseBody(dos, body);
             }
 
-            else { // queryString
-                String[] querySplit = tokens[1].split("\\?");
-                System.out.println(tokens[1]);
-                String endpoint = querySplit[0];
-                String queryString = querySplit[1];
+            else if (tokens[0].equals("POST")) {
+                String endpoint = tokens[1];
+                String queryString = null;
+                int requestContentLength = 0;
+
+                while(true) {
+                    final String line = br.readLine();
+                    if (line.isEmpty())
+                        break;
+                    if (line.startsWith("Content-Length"))
+                        requestContentLength = Integer.parseInt(line.split(": ")[1]);
+                }
+
+                queryString = IOUtils.readData(br, requestContentLength);
 
                 if (endpoint.equals("/user/signup")) {
                     HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(queryString);
