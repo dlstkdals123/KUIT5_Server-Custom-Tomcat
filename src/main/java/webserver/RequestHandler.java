@@ -43,7 +43,7 @@ public class RequestHandler implements Runnable{
 
             else if (tokens[0].equals("POST")) {
                 String endpoint = tokens[1];
-                String queryString = null;
+                String queryString;
                 int requestContentLength = 0;
 
                 while(true) {
@@ -61,11 +61,9 @@ public class RequestHandler implements Runnable{
                     MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
                     memoryUserRepository.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
 
-                    String filePath = "webapp/index.html";
-                    byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-                    response200Header(dos, body.length);
-                    responseBody(dos, body);
+                    String filePath = "/index.html";
+                    response302Header(dos, filePath);
                 }
             }
 
@@ -80,6 +78,16 @@ public class RequestHandler implements Runnable{
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String path) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + path + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.log(Level.SEVERE, e.getMessage());
