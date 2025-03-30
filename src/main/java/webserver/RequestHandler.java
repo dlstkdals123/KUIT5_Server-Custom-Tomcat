@@ -41,6 +41,28 @@ public class RequestHandler implements Runnable{
                 responseBody(dos, body);
             }
 
+            else if (tokens[0].equals("GET") && tokens[1].equals("/user/userList")) {
+                HashMap<String, String> cookieList = new HashMap<>();
+                while(true) {
+                    final String line = br.readLine();
+                    if (line.isEmpty())
+                        break;
+                    if (line.startsWith("Cookie")) {
+                        String cookieString = line.split(": ")[1];
+                        cookieList = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(cookieString);
+                    }
+                }
+
+                if (cookieList.get("logined").equals("true")) {
+                    String filePath = "webapp/user/list.html";
+                    byte[] body = Files.readAllBytes(Paths.get(filePath));
+
+                    response200Header(dos, body.length);
+                    responseBody(dos, body);
+                }
+
+            }
+
             else if (tokens[0].equals("POST")) {
                 String endpoint = tokens[1];
                 String queryString;
