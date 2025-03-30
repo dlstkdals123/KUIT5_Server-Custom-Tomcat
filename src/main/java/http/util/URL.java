@@ -2,7 +2,7 @@ package http.util;
 
 public enum URL {
     INDEX("/", "/index.html", "webapp/index.html"),
-    USER_LIST("/user/userList", "/user/list.html", "webapp/user/list.html"),
+    USER_LIST("/user/userList", "/user/login.html", "webapp/user/list.html"),
     SIGNUP("/user/signup", INDEX.getRedirectPath(), INDEX.getFilePath()),
     LOGIN("/user/login", INDEX.getRedirectPath(), INDEX.getFilePath()),
     LOGIN_FAILED("/user/login", "/user/login_failed.html", "webapp/user/login_failed.html");

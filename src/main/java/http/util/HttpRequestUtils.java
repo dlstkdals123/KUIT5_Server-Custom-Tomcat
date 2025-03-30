@@ -1,6 +1,7 @@
 package http.util;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,16 +22,44 @@ public class HttpRequestUtils {
         }
     }
 
-    public static Map<String, String> parseHeader(BufferedReader br) {
+    public static HttpRequest parseRequest(BufferedReader br) throws IOException {
         try {
-            HashMap<String, String> map = startLine(br);
+            String[] startLine = getStartLine(br);
+            HashMap<String, String> header = (HashMap<String, String>) parseHeader(br);
+            String queryString = "";
+            if (header.containsKey("Content-Length")) {
+                int requestContentLength = Integer.parseInt(header.get("Content-Length"));
+                queryString = IOUtils.readData(br, requestContentLength);
+            }
+
+            return new HttpRequest(startLine, header, queryString);
+        } catch (Exception e) {
+            return new HttpRequest(new String[0], new HashMap<>(), "");
+        }
+
+    }
+
+    private static String[] getStartLine(BufferedReader br) throws IOException {
+        try {
+            String[] startLine = br.readLine().split(" ");
+            if (startLine.length != 3)
+                throw new IOException("Invalid request");
+            return startLine;
+        } catch (Exception e) {
+            return new String[0];
+        }
+
+    }
+
+    private static Map<String, String> parseHeader(BufferedReader br) {
+        try {
+            HashMap<String, String> map = new HashMap<>();
 
             String line;
             while(!(line = br.readLine()).isEmpty()) {
                 String[] keyValue = line.split(": ");
                 map.put(keyValue[0], keyValue[1]);
             }
-            addAcceptHeader(map);
 
             return map;
         } catch (Exception e) {
@@ -46,33 +75,18 @@ public class HttpRequestUtils {
         return URL.fromURL(url).getFilePath();
     }
 
-    private static void addAcceptHeader(HashMap<String, String> map) {
-        String filePath = getFilePath(map.get("url"));
-
+    public static String getContentType(String filePath) {
         int index = filePath.lastIndexOf(".");
         String extension = filePath.substring(index + 1);
 
         if (extension.equals("html") || extension.equals("css") || extension.equals("js")) {
-            map.put("Accept", "text/" + extension);
-            return;
+            return "text/" + extension;
         }
 
         if (extension.equals("jpeg") || extension.equals("png")) {
-            map.put("Accept", "image/" + extension);
+            return "image/" + extension;
         }
-    }
 
-    private static HashMap<String, String> startLine(BufferedReader br) {
-        try {
-            String[] startLine = br.readLine().split(" ");
-            HashMap<String, String> startLineMap = new HashMap<>();
-            startLineMap.put("method", startLine[0]);
-            startLineMap.put("url", startLine[1]);
-            startLineMap.put("version", startLine[2]);
-
-            return startLineMap;
-        } catch (Exception e) {
-            return new HashMap<>();
-        }
+        return "";
     }
 }
