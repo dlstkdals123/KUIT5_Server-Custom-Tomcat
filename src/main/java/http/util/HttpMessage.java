@@ -4,12 +4,12 @@ import http.util.constant.HttpHeader;
 
 import java.util.HashMap;
 
-public class HttpRequest {
+public class HttpMessage {
     private final String[] startLineParam;
     private final HashMap<String, String> header;
     private final String body;
 
-    public HttpRequest(String[] startLineParam, HashMap<String, String> header, String body) {
+    public HttpMessage(String[] startLineParam, HashMap<String, String> header, String body) {
         this.startLineParam = startLineParam;
         this.header = header;
         this.body = body;
