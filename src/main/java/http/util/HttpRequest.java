@@ -5,9 +5,9 @@ import http.util.constant.HttpHeader;
 import java.util.HashMap;
 
 public class HttpRequest {
-    private String[] startLineParam;
-    private HashMap<String, String> header;
-    private String body;
+    private final String[] startLineParam;
+    private final HashMap<String, String> header;
+    private final String body;
 
     public HttpRequest(String[] startLineParam, HashMap<String, String> header, String body) {
         this.startLineParam = startLineParam;
