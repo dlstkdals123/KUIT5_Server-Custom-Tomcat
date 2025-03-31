@@ -1,4 +1,4 @@
-package http.util;
+package http.util.constant;
 
 public enum MY_URL {
     INDEX("/", "/index.html", "webapp/index.html"),

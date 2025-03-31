@@ -1,4 +1,4 @@
-package http.util;
+package http.util.constant;
 
 public enum URL {
     INDEX("/index.html"),

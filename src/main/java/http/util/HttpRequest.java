@@ -1,5 +1,7 @@
 package http.util;
 
+import http.util.constant.HttpHeader;
+
 import java.util.HashMap;
 
 public class HttpRequest {

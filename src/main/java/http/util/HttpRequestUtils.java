@@ -1,5 +1,7 @@
 package http.util;
 
+import http.util.constant.MY_URL;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
