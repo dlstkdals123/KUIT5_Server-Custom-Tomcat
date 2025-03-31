@@ -72,7 +72,7 @@ public class HttpRequestUtils {
         if (index != -1) {
             return rootPath + url;
         }
-        return URL.fromURL(url).getFilePath();
+        return MY_URL.fromURL(url).getFilePath();
     }
 
     public static String getContentType(String filePath) {

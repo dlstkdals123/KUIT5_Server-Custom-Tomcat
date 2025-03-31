@@ -1,10 +1,7 @@
 package webserver;
 
 import db.MemoryUserRepository;
-import http.util.HttpMethod;
-import http.util.HttpRequest;
-import http.util.HttpRequestUtils;
-import http.util.URL;
+import http.util.*;
 import model.User;
 
 import java.io.*;
@@ -72,7 +69,7 @@ public class RequestHandler implements Runnable{
 
     private void responseGet(DataOutputStream dos, HttpRequest request) throws IOException {
         try {
-            if (request.getUrl().equals(URL.USER_LIST.getUrl())) {
+            if (request.getUrl().equals(MY_URL.USER_LIST.getUrl())) {
                 responseUserList(dos, request);
                 return;
             }
@@ -94,13 +91,14 @@ public class RequestHandler implements Runnable{
                     && cookieList.containsKey("logined")
                     && cookieList.get("logined").equals("true")) {
 
-                byte[] body = Files.readAllBytes(Paths.get(URL.USER_LIST.getFilePath()));
+                String filePath = MY_URL.USER_LIST.getFilePath();
+                byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-                response200Header(dos, body.length, HttpRequestUtils.getContentType(URL.USER_LIST.getFilePath()));
+                response200Header(dos, body.length, HttpRequestUtils.getContentType(filePath));
                 responseBody(dos, body);
                 return;
             }
-            response302Header(dos, URL.USER_LIST.getRedirectPath(), null);
+            response302Header(dos, URL.LOGIN.getUrl(), null);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
         }
@@ -111,12 +109,12 @@ public class RequestHandler implements Runnable{
             HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(request.getBody());
             MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
 
-            if (request.getUrl().equals(URL.SIGNUP.getUrl())) {
+            if (request.getUrl().equals(MY_URL.SIGNUP.getUrl())) {
                 responseSignup(dos, memoryUserRepository, params);
                 return;
             }
 
-            if (request.getUrl().equals(URL.LOGIN.getUrl())) {
+            if (request.getUrl().equals(MY_URL.LOGIN.getUrl())) {
                 responseLogin(dos, memoryUserRepository, params);
             }
         } catch (Exception e) {
@@ -127,7 +125,7 @@ public class RequestHandler implements Runnable{
     private void responseSignup(DataOutputStream dos, MemoryUserRepository memoryUserRepository, HashMap<String, String> params) {
         try {
             memoryUserRepository.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
-            response302Header(dos, URL.SIGNUP.getRedirectPath(), null);
+            response302Header(dos, URL.INDEX.getUrl(), null);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
         }
@@ -138,17 +136,17 @@ public class RequestHandler implements Runnable{
             String userId = params.get("userId");
             String password = params.get("password");
             if (userId == null || password == null) {
-                response302Header(dos, URL.LOGIN_FAILED.getRedirectPath(), null);
+                response302Header(dos, URL.LOGIN_FAILED.getUrl(), null);
                 return;
             }
 
             User user = memoryUserRepository.findUserById(userId);
             if (user == null || !password.equals(user.getPassword())) {
-                response302Header(dos, URL.LOGIN_FAILED.getRedirectPath(), null);
+                response302Header(dos, URL.LOGIN_FAILED.getUrl(), null);
                 return;
             }
 
-            response302Header(dos, URL.INDEX.getRedirectPath(), "logined=true; Path=/");
+            response302Header(dos, URL.INDEX.getUrl(), "logined=true; Path=/");
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
         }
