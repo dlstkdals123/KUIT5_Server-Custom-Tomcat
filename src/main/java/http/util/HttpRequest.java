@@ -22,7 +22,7 @@ public class HttpRequest {
     }
 
     public String getCookie() {
-        return header.get("Cookie");
+        return header.get(HttpHeader.COOKIE.getHeader());
     }
 
     public String getBody() {
