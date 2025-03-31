@@ -76,7 +76,7 @@ public class RequestHandler implements Runnable{
             }
 
             if (request.getUrl().equals(Query.NO_QUERY.getQuery())) {
-                responseInitialPage(dos, request);
+                responseInitialPage(dos);
                 return;
             }
 
@@ -110,7 +110,7 @@ public class RequestHandler implements Runnable{
         }
     }
 
-    private void responseInitialPage(DataOutputStream dos, HttpRequest request) throws IOException {
+    private void responseInitialPage(DataOutputStream dos) throws IOException {
         try {
             String filePath = HttpRequestUtils.getFilePath(URL.INDEX.getUrl());
             byte[] body = Files.readAllBytes(Paths.get(filePath));
