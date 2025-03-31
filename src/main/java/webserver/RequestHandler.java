@@ -4,6 +4,7 @@ import db.MemoryUserRepository;
 import http.util.*;
 import http.util.constant.HttpMethod;
 import http.util.constant.MY_URL;
+import http.util.constant.QueryKey;
 import http.util.constant.URL;
 import model.User;
 
@@ -127,7 +128,7 @@ public class RequestHandler implements Runnable{
 
     private void responseSignup(DataOutputStream dos, MemoryUserRepository memoryUserRepository, HashMap<String, String> params) {
         try {
-            memoryUserRepository.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
+            memoryUserRepository.addUser(new User(params.get(QueryKey.ID.getKey()), params.get(QueryKey.PASSWORD.getKey()), params.get(QueryKey.NAME.getKey()), params.get(QueryKey.EMAIL.getKey())));
             response302Header(dos, URL.INDEX.getUrl(), null);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
@@ -136,8 +137,8 @@ public class RequestHandler implements Runnable{
 
     private void responseLogin(DataOutputStream dos, MemoryUserRepository memoryUserRepository, HashMap<String, String> params) {
         try {
-            String userId = params.get("userId");
-            String password = params.get("password");
+            String userId = params.get(QueryKey.ID.getKey());
+            String password = params.get(QueryKey.PASSWORD.getKey());
             if (userId == null || password == null) {
                 response302Header(dos, URL.LOGIN_FAILED.getUrl(), null);
                 return;
