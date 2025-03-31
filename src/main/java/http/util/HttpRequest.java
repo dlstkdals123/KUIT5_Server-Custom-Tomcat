@@ -30,4 +30,19 @@ public class HttpRequest {
     public String getBody() {
         return body;
     }
+
+    public static String getContentType(String filePath) {
+        int index = filePath.lastIndexOf(".");
+        String extension = filePath.substring(index + 1);
+
+        if (extension.equals("html") || extension.equals("css") || extension.equals("js")) {
+            return "text/" + extension;
+        }
+
+        if (extension.equals("jpeg") || extension.equals("png")) {
+            return "image/" + extension;
+        }
+
+        return "";
+    }
 }

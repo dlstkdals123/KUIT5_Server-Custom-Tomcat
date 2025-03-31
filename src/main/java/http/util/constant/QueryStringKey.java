@@ -1,6 +1,6 @@
 package http.util.constant;
 
-public enum QueryKey {
+public enum QueryStringKey {
     ID("userId"),
     PASSWORD("password"),
     NAME("name"),
@@ -8,7 +8,7 @@ public enum QueryKey {
 
     private final String key;
 
-    QueryKey(String key) {
+    QueryStringKey(String key) {
         this.key = key;
     }
 

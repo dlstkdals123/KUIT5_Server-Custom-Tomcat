@@ -1,7 +1,5 @@
 package http.util;
 
-import http.util.constant.MY_URL;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -70,25 +68,8 @@ public class HttpRequestUtils {
     }
 
     public static String getFilePath(String url) {
-        int index = url.lastIndexOf(".");
-        if (index != -1) {
+        if (!url.startsWith(rootPath))
             return rootPath + url;
-        }
-        return MY_URL.fromURL(url).getFilePath();
-    }
-
-    public static String getContentType(String filePath) {
-        int index = filePath.lastIndexOf(".");
-        String extension = filePath.substring(index + 1);
-
-        if (extension.equals("html") || extension.equals("css") || extension.equals("js")) {
-            return "text/" + extension;
-        }
-
-        if (extension.equals("jpeg") || extension.equals("png")) {
-            return "image/" + extension;
-        }
-
-        return "";
+        return url;
     }
 }

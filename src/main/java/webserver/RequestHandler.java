@@ -2,10 +2,7 @@ package webserver;
 
 import db.MemoryUserRepository;
 import http.util.*;
-import http.util.constant.HttpMethod;
-import http.util.constant.MY_URL;
-import http.util.constant.QueryKey;
-import http.util.constant.URL;
+import http.util.constant.*;
 import model.User;
 
 import java.io.*;
@@ -73,15 +70,20 @@ public class RequestHandler implements Runnable{
 
     private void responseGet(DataOutputStream dos, HttpRequest request) throws IOException {
         try {
-            if (request.getUrl().equals(MY_URL.USER_LIST.getUrl())) {
+            if (request.getUrl().equals(Query.USER_LIST.getQuery())) {
                 responseUserList(dos, request);
+                return;
+            }
+
+            if (request.getUrl().equals(Query.NO_QUERY.getQuery())) {
+                responseInitialPage(dos, request);
                 return;
             }
 
             String filePath = HttpRequestUtils.getFilePath(request.getUrl());
             byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-            response200Header(dos, body.length, HttpRequestUtils.getContentType(filePath));
+            response200Header(dos, body.length, HttpRequest.getContentType(filePath));
             responseBody(dos, body);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
@@ -95,14 +97,26 @@ public class RequestHandler implements Runnable{
                     && cookieList.containsKey("logined")
                     && cookieList.get("logined").equals("true")) {
 
-                String filePath = MY_URL.USER_LIST.getFilePath();
+                String filePath = HttpRequestUtils.getFilePath(URL.USER_LIST.getUrl());
                 byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-                response200Header(dos, body.length, HttpRequestUtils.getContentType(filePath));
+                response200Header(dos, body.length, HttpRequest.getContentType(filePath));
                 responseBody(dos, body);
                 return;
             }
             response302Header(dos, URL.LOGIN.getUrl(), null);
+        } catch (Exception e) {
+            log.log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    private void responseInitialPage(DataOutputStream dos, HttpRequest request) throws IOException {
+        try {
+            String filePath = HttpRequestUtils.getFilePath(URL.INDEX.getUrl());
+            byte[] body = Files.readAllBytes(Paths.get(filePath));
+
+            response200Header(dos, body.length, HttpRequest.getContentType(filePath));
+            responseBody(dos, body);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
         }
@@ -113,12 +127,12 @@ public class RequestHandler implements Runnable{
             HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(request.getBody());
             MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
 
-            if (request.getUrl().equals(MY_URL.SIGNUP.getUrl())) {
+            if (request.getUrl().equals(Query.SIGNUP.getQuery())) {
                 responseSignup(dos, memoryUserRepository, params);
                 return;
             }
 
-            if (request.getUrl().equals(MY_URL.LOGIN.getUrl())) {
+            if (request.getUrl().equals(Query.LOGIN.getQuery())) {
                 responseLogin(dos, memoryUserRepository, params);
             }
         } catch (Exception e) {
@@ -128,7 +142,7 @@ public class RequestHandler implements Runnable{
 
     private void responseSignup(DataOutputStream dos, MemoryUserRepository memoryUserRepository, HashMap<String, String> params) {
         try {
-            memoryUserRepository.addUser(new User(params.get(QueryKey.ID.getKey()), params.get(QueryKey.PASSWORD.getKey()), params.get(QueryKey.NAME.getKey()), params.get(QueryKey.EMAIL.getKey())));
+            memoryUserRepository.addUser(new User(params.get(QueryStringKey.ID.getKey()), params.get(QueryStringKey.PASSWORD.getKey()), params.get(QueryStringKey.NAME.getKey()), params.get(QueryStringKey.EMAIL.getKey())));
             response302Header(dos, URL.INDEX.getUrl(), null);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
@@ -137,8 +151,8 @@ public class RequestHandler implements Runnable{
 
     private void responseLogin(DataOutputStream dos, MemoryUserRepository memoryUserRepository, HashMap<String, String> params) {
         try {
-            String userId = params.get(QueryKey.ID.getKey());
-            String password = params.get(QueryKey.PASSWORD.getKey());
+            String userId = params.get(QueryStringKey.ID.getKey());
+            String password = params.get(QueryStringKey.PASSWORD.getKey());
             if (userId == null || password == null) {
                 response302Header(dos, URL.LOGIN_FAILED.getUrl(), null);
                 return;
