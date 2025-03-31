@@ -1,6 +1,7 @@
 package webserver;
 
 import db.MemoryUserRepository;
+import http.util.HttpMethod;
 import http.util.HttpRequest;
 import http.util.HttpRequestUtils;
 import http.util.URL;
@@ -31,12 +32,12 @@ public class RequestHandler implements Runnable{
 
             HttpRequest request = HttpRequestUtils.parseRequest(br);
 
-            if (request.getMethod().equals("GET")) {
+            if (request.getMethod().equals(HttpMethod.GET.getMethod())) {
                 responseGet(dos, request);
                 return;
             }
 
-            if (request.getMethod().equals("POST")) {
+            if (request.getMethod().equals(HttpMethod.POST.getMethod())) {
                 responsePost(dos, request);
             }
         } catch (IOException e) {
