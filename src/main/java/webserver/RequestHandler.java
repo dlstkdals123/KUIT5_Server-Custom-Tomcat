@@ -23,7 +23,7 @@ public class RequestHandler implements Runnable{
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             DataOutputStream dos = new DataOutputStream(out);
 
-            HttpMessage request = HttpRequest.createHttpMessage(br);
+            HttpRequest request = HttpRequest.from(br);
             HttpResponse response = HttpResponse.from(dos);
 
             if (request.getMethod().equals(HttpMethod.GET.getMethod())) {

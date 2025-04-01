@@ -1,7 +1,6 @@
 package webserver;
 
 import db.MemoryUserRepository;
-import http.util.HttpMessage;
 import http.util.HttpRequestUtils;
 import http.util.constant.Query;
 import http.util.constant.QueryStringKey;
@@ -30,7 +29,7 @@ public class HttpResponse {
         try {
             byte[] body = Files.readAllBytes(Paths.get(filePath));
 
-            response200Header(body.length, HttpMessage.getContentType(filePath));
+            response200Header(body.length, HttpRequest.getContentType(filePath));
             responseBody(body);
         } catch (Exception e) {
             log.log(Level.SEVERE, e.getMessage());
@@ -73,7 +72,7 @@ public class HttpResponse {
         }
     }
 
-    public void responseGet(HttpMessage request){
+    public void responseGet(HttpRequest request){
         if (request.getUrl().equals(Query.USER_LIST.getQuery())) {
             responseUserList(request);
             return;
@@ -91,7 +90,7 @@ public class HttpResponse {
         forward(HttpRequestUtils.getFilePath(URL.INDEX.getUrl()));
     }
 
-    private void responseUserList(HttpMessage request) {
+    private void responseUserList(HttpRequest request) {
         HashMap<String, String> cookieList = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(request.getCookie());
         if (cookieList != null
                 && cookieList.containsKey("logined")
@@ -103,7 +102,7 @@ public class HttpResponse {
         redirect(URL.LOGIN.getUrl(), null);
     }
 
-    public void responsePost(HttpMessage request) {
+    public void responsePost(HttpRequest request) {
         HashMap<String, String> params = (HashMap<String, String>) HttpRequestUtils.parseQueryParameter(request.getBody());
         MemoryUserRepository memoryUserRepository = MemoryUserRepository.getInstance();
 
