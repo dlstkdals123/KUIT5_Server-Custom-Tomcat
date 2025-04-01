@@ -1,7 +1,7 @@
 package webserver;
 
-import http.util.*;
 import http.util.constant.*;
+import webserver.Controller.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -25,15 +25,24 @@ public class RequestHandler implements Runnable{
 
             HttpRequest request = HttpRequest.from(br);
             HttpResponse response = HttpResponse.from(dos);
+            Controller controller = new ForwardController();
 
-            if (request.getMethod().equals(HttpMethod.GET.getMethod())) {
-                response.responseGet(request);
-                return;
-            }
+            if (request.getMethod().equals(HttpMethod.GET.getMethod()) && request.getMethod().endsWith(".html"))
+                controller = new ForwardController();
 
-            if (request.getMethod().equals(HttpMethod.POST.getMethod())) {
-                response.responsePost(request);
-            }
+            if (request.getUrl().equals(Query.NO_QUERY.getQuery()))
+                controller = new HomeController();
+
+            if (request.getUrl().equals(Query.SIGNUP.getQuery()))
+                controller = new SignupController();
+
+            if (request.getUrl().equals(Query.LOGIN.getQuery()))
+                controller = new LoginController();
+
+            if (request.getUrl().equals(Query.USER_LIST.getQuery()))
+                controller = new ListController();
+
+            controller.execute(request, response);
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
         }
