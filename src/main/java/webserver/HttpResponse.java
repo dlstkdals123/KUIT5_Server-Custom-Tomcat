@@ -83,11 +83,11 @@ public class HttpResponse {
             return;
         }
 
-        forward(HttpRequestUtils.getFilePath(request.getUrl()));
+        forward(URL.getFilePath(request.getUrl()));
     }
 
     private void responseInitialPage() {
-        forward(HttpRequestUtils.getFilePath(URL.INDEX.getUrl()));
+        forward(URL.INDEX.getFilePath());
     }
 
     private void responseUserList(HttpRequest request) {
@@ -96,7 +96,7 @@ public class HttpResponse {
                 && cookieList.containsKey("logined")
                 && cookieList.get("logined").equals("true")) {
 
-            forward(HttpRequestUtils.getFilePath(URL.USER_LIST.getUrl()));
+            forward(URL.USER_LIST.getFilePath());
             return;
         }
         redirect(URL.LOGIN.getUrl(), null);
