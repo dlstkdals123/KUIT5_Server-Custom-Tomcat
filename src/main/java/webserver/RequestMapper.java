@@ -6,9 +6,9 @@ import webserver.Controller.*;
 import java.util.HashMap;
 
 public class RequestMapper {
-    private HttpRequest request;
-    private HttpResponse response;
-    private HashMap<String, Controller> controllers = new HashMap<>();
+    private final HttpRequest request;
+    private final HttpResponse response;
+    private final HashMap<String, Controller> controllers = new HashMap<>();
 
     RequestMapper(HttpRequest request, HttpResponse response) {
         this.request = request;
