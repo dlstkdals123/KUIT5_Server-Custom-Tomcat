@@ -7,6 +7,7 @@ public enum URL {
     LOGIN_FAILED("/user/login_failed.html");
 
     private final String url;
+    private static final String root = "webapp";
 
     URL(String url) {
         this.url = url;
@@ -15,4 +16,8 @@ public enum URL {
     public String getUrl() {
         return url;
     }
+
+    public String getFilePath() { return root + url; }
+
+    public static String getFilePath(String path) { return root + path; }
 }

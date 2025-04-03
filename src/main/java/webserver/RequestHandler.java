@@ -1,8 +1,5 @@
 package webserver;
 
-import http.util.*;
-import http.util.constant.*;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -23,17 +20,11 @@ public class RequestHandler implements Runnable{
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             DataOutputStream dos = new DataOutputStream(out);
 
-            HttpMessage request = HttpRequest.createHttpMessage(br);
+            HttpRequest request = HttpRequest.from(br);
             HttpResponse response = HttpResponse.from(dos);
 
-            if (request.getMethod().equals(HttpMethod.GET.getMethod())) {
-                response.responseGet(request);
-                return;
-            }
-
-            if (request.getMethod().equals(HttpMethod.POST.getMethod())) {
-                response.responsePost(request);
-            }
+            RequestMapper requestMapper = new RequestMapper(request, response);
+            requestMapper.proceed();
         } catch (IOException e) {
             log.log(Level.SEVERE,e.getMessage());
         }

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HttpRequestUtils {
-    private static final String rootPath = "webapp";
 
     public static Map<String, String> parseQueryParameter(String queryString) {
         try {
@@ -18,11 +17,5 @@ public class HttpRequestUtils {
         } catch (Exception e) {
             return new HashMap<>();
         }
-    }
-
-    public static String getFilePath(String url) {
-        if (!url.startsWith(rootPath))
-            return rootPath + url;
-        return url;
     }
 }
