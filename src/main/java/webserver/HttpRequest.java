@@ -62,10 +62,6 @@ public class HttpRequest {
         }
     }
 
-    public String getMethod() {
-        return startLineParam[0];
-    }
-
     public String getUrl() {
         return startLineParam[1];
     }

@@ -1,6 +1,5 @@
 package webserver;
 
-import http.util.constant.HttpMethod;
 import http.util.constant.Query;
 import webserver.Controller.*;
 

@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 public class WebServer {
     private static final int DEFAULT_PORT = 80;
     private static final int DEFAULT_THREAD_NUM = 50;
-    private static final Logger log = Logger.getLogger(WebServer.class.getName());
 
     public static void main(String[] args) throws IOException {
         int port = DEFAULT_PORT;
