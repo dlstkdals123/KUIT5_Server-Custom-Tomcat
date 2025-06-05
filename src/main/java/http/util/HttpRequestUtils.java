@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HttpRequestUtils {
+
     public static Map<String, String> parseQueryParameter(String queryString) {
         try {
             String[] queryStrings = queryString.split("&");
